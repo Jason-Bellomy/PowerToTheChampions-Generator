@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RiotDataSource.CacheData;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -24,13 +25,23 @@ namespace RiotDataSource
     /// </summary>
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
-        private List<SeedData.MatchListing> matchIdFiles = new List<SeedData.MatchListing>();
-        private int RATE_LIMIT_WAIT_IN_MS = 5000;
+        private string _RootSeedDataFileDir_;
+        private string _RootDataCacheFileDir_ = "Y:\\Documents\\PowerToTheChampions-Generator\\DataCache\\";
 
+        private List<SeedData.MatchListing> _matchIdFiles = new List<SeedData.MatchListing>();
+        private bool _cacheMatchJson = false;
+        
         public MainWindow()
         {
             InitializeComponent();
             this.DataContext = this;
+
+            string applicationPath = Directory.GetCurrentDirectory();
+            string[] pathsToSeedData = new string[] { applicationPath, "..", "..", "..", "AP_ITEM_DATASET" };
+            _RootSeedDataFileDir_ = System.IO.Path.Combine(pathsToSeedData);
+
+            string[] pathsToCacheData = new string[] { applicationPath, "..", "..", "..", "CachedData" };
+            _RootDataCacheFileDir_ = System.IO.Path.Combine(pathsToCacheData);
         }
 
         private string _log;
@@ -54,82 +65,84 @@ namespace RiotDataSource
 
         private void ReadMatchesFromAPI(object state)
         {
-            foreach (SeedData.MatchListing listing in matchIdFiles)
+            if (_matchIdFiles.Count == 0)
             {
-                foreach (string matchId in listing.MatchIds)
-                {
-                    bool rateLimitHit = true;
-                    while (rateLimitHit)
-                    {
-                        string resource = "/" + listing.region + "/v2.2/match/" + matchId;
+                log = "No match ID listings to use for match IDs.";
+                return;
+            }
 
-                        RiotRestAPI.MatchDTO match = RiotRestAPI.APIConnection.Get<RiotRestAPI.MatchDTO>(resource, ref rateLimitHit);
-                        if (match != null)
-                        {
-                            LogProgress(match.ToString());
-                        }
-                        else if (rateLimitHit)
-                        {
-                            LogProgress("Hit rate limit. Waiting to retry.");
-                            System.Threading.Thread.Sleep(RATE_LIMIT_WAIT_IN_MS);
-                        }
-                        else
-                        {
-                            LogProgress("Unable to load match: " + listing.region + " - " + matchId);
-                        }
-                    }
-                }
+            if (_cacheMatchJson)
+            {
+                log = "Starting to pull and cache matches...";
+                string rootMatchDataDirectory = System.IO.Path.Combine(_RootDataCacheFileDir_, "MatchData");
+                MatchManager.CacheMatchesFromAPI(_matchIdFiles, rootMatchDataDirectory);
+            }
+            else
+            {
+                log = "Pulling matches...";
+                MatchManager.ReadMatchesFromAPI(_matchIdFiles);
             }
         }
 
         private void LogProgress(string logMessage)
         {
             log = logMessage + "\n" + log;
-            
         }
 
         private void Read_Input_Match_File(object sender, RoutedEventArgs e)
         {
-            if (matchIdFiles.Count != 0)
+            if (_matchIdFiles.Count != 0)
             {
                 return;
             }
 
-            string rootDataFileDir = "Y:\\documents\\visual studio 2013\\Projects\\RiotDataSource\\RiotDataSource\\bin\\Debug\\..\\..\\..\\AP_ITEM_DATASET\\";
-
-            IEnumerable<String> versionSubDirectories = System.IO.Directory.EnumerateDirectories(rootDataFileDir);
-            foreach (string versionDir in versionSubDirectories)
-            {
-                string version = System.IO.Path.GetFileName(versionDir);
-
-                IEnumerable<string> modeSubDirectories = System.IO.Directory.EnumerateDirectories(versionDir);
-                foreach (string modeDir in modeSubDirectories)
-                {
-                    string mode = System.IO.Path.GetFileName(modeDir);
-
-                    IEnumerable<string> regionFiles = System.IO.Directory.EnumerateFiles(modeDir);
-                    foreach (string regionFile in regionFiles)
-                    {
-                        string region = System.IO.Path.GetFileNameWithoutExtension(regionFile).ToLower();
-
-                        DataContractJsonSerializer jsonSerializer = new DataContractJsonSerializer(typeof(List<double>));
-                        object objResponse = jsonSerializer.ReadObject(File.Open(regionFile, FileMode.Open));
-                        List<double> listing = (List<double>)Convert.ChangeType(objResponse, typeof(List<double>));
-
-                        SeedData.MatchListing matchListingFile = new SeedData.MatchListing();
-                        matchListingFile.mode = mode;
-                        matchListingFile.region = region;
-                        matchListingFile.version = version;
-                        foreach(double entry in listing)
-                        {
-                            matchListingFile.MatchIds.Add(entry.ToString());
-                        }
-                        matchIdFiles.Add(matchListingFile);
-                    }
-                }
-            }
+            _matchIdFiles = SeedData.MatchListingManager.LoadMatchDataFromSourceFiles(_RootSeedDataFileDir_);
 
             log = "Successfully loaded match ID files.";
+        }
+
+        private void Write_Match_DataFiles(object sender, RoutedEventArgs e)
+        {
+            if (_matchIdFiles.Count == 0)
+            {
+                log = "No match ID listings to cache.";
+                return;
+            }
+
+            string rootDataDirectory = System.IO.Path.Combine(_RootDataCacheFileDir_, "MatchListings");
+            SeedData.MatchListingManager.SaveMatchListingsToDisk(rootDataDirectory, _matchIdFiles);
+            
+            log = "Successfully saved match ID listings to cache.";
+        }
+
+        private void Load_Match_DataFiles(object sender, RoutedEventArgs e)
+        {
+            string rootDataDirectory = System.IO.Path.Combine(_RootDataCacheFileDir_, "MatchListings");
+            _matchIdFiles = SeedData.MatchListingManager.LoadMatchListingsFromDisk(rootDataDirectory);
+
+            log = "Successfully loaded match ID listings from cache.";
+        }
+
+        private void CheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+            HandleCheckBoxState(sender as CheckBox);
+        }
+
+        private void CheckBox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            HandleCheckBoxState(sender as CheckBox);
+        }
+
+        private void HandleCheckBoxState(CheckBox checkbox)
+        {
+            if (checkbox.IsChecked.HasValue)
+            {
+                _cacheMatchJson = checkbox.IsChecked.Value;
+            }
+            else
+            {
+                _cacheMatchJson = false;
+            }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

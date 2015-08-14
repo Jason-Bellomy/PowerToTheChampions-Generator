@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace RiotDataSource.SeedData
 {
+    [DataContract]
     class MatchListing
     {
         public MatchListing()
@@ -14,9 +15,16 @@ namespace RiotDataSource.SeedData
             MatchIds = new List<string>();
         }
 
+        [DataMember]
         public string version { get; set; }
+
+        [DataMember]
         public string mode { get; set; }
+
+        [DataMember]
         public string region { get; set; }
+
+        [DataMember]
         public List<string> MatchIds { get; set; }
     }
 }

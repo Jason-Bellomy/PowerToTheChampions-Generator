@@ -10,43 +10,43 @@ namespace RiotDataSource.RiotRestAPI
     [DataContract]
     class MatchDTO
     {
-        [DataMember(Name = "matchId")]
+        [DataMember(Name = "matchId", Order = 0)]
         public string MatchId { get; set; }
 
-        [DataMember(Name = "region")]
+        [DataMember(Name = "region", Order = 1)]
         public string Region { get; set; }
 
-        [DataMember(Name = "platformId")]
+        [DataMember(Name = "platformId", Order = 2)]
         public string PlatformId { get; set; }
 
-        [DataMember(Name = "matchMode")]
+        [DataMember(Name = "matchMode", Order = 3)]
         public string MatchMode { get; set; }
 
-        [DataMember(Name = "matchType")]
+        [DataMember(Name = "matchType", Order = 4)]
         public string MatchType { get; set; }
 
-        [DataMember(Name = "matchCreation")]
+        [DataMember(Name = "matchCreation", Order = 5)]
         public double MatchCreation { get; set; }
 
-        [DataMember(Name = "matchDuration")]
+        [DataMember(Name = "matchDuration", Order = 6)]
         public double MatchDuration { get; set; }
 
-        [DataMember(Name = "queueType")]
+        [DataMember(Name = "queueType", Order = 7)]
         public string QueueType { get; set; }
 
-        [DataMember(Name = "mapId")]
+        [DataMember(Name = "mapId", Order = 8)]
         public int MapId { get; set; }
 
-        [DataMember(Name = "season")]
+        [DataMember(Name = "season", Order = 9)]
         public string Season { get; set; }
 
-        [DataMember(Name = "matchVersion")]
+        [DataMember(Name = "matchVersion", Order = 10)]
         public string MatchVersion { get; set; }
 
-        [DataMember(Name = "participants")]
+        [DataMember(Name = "participants", Order = 11)]
         public List<MatchParticipantDTO> MatchParticipants { get; set; }
 
-        [DataMember(Name = "teams")]
+        [DataMember(Name = "teams", Order = 12)]
         public List<MatchTeamDTO> MatchTeams { get; set; }
     }
 }
