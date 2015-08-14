@@ -1,0 +1,20 @@
+﻿<Window x:Class="RiotDataSource.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MainWindow" Height="350" Width="525">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <StackPanel Width="Auto" HorizontalAlignment="Left" Orientation="Horizontal">
+            <Button Content="Read Match File" Margin="10,10,0,0" Click="Read_Input_Match_File" />
+            <Button Content="Start Pulling" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="75" 
+                    Click="Start_Pulling_From_API"/>
+        </StackPanel>
+        <TextBlock HorizontalAlignment="Left" Margin="10,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="276" Width="500" Grid.Row="1" Text="{Binding log}" />
+    </Grid>
+</Window>
