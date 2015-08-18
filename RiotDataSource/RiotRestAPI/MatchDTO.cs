@@ -46,7 +46,10 @@ namespace RiotDataSource.RiotRestAPI
         [DataMember(Name = "participants", Order = 11)]
         public List<MatchParticipantDTO> MatchParticipants { get; set; }
 
-        [DataMember(Name = "teams", Order = 12)]
+        [DataMember(Name = "participantIdentities", Order = 12)]
+        public List<MatchParticipantIdDTO> MatchParticipantIds { get; set; }
+
+        [DataMember(Name = "teams", Order = 13)]
         public List<MatchTeamDTO> MatchTeams { get; set; }
     }
 }

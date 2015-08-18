@@ -11,16 +11,16 @@ namespace RiotDataSource.RiotRestAPI
     class MatchParticipantDTO
     {
         [DataMember(Name = "teamId", Order = 0)]
-        public string TeamId { get; set; }
+        public int TeamId { get; set; }
 
         [DataMember(Name = "spell1Id", Order = 1)]
-        public string SpellOneId { get; set; }
+        public int SpellOneId { get; set; }
 
         [DataMember(Name = "spell2Id", Order = 2)]
-        public string SpellTwoId { get; set; }
+        public int SpellTwoId { get; set; }
 
         [DataMember(Name = "championId", Order = 3)]
-        public string ChampionId { get; set; }
+        public int ChampionId { get; set; }
 
         [DataMember(Name = "highestAchievedSeasonTier", Order = 4)]
         public string AchievedTier { get; set; }
@@ -28,16 +28,16 @@ namespace RiotDataSource.RiotRestAPI
         [DataMember(Name = "timeline", Order = 5)]
         public MatchParticipantTimelineDTO Timeline { get; set; }
 
-        [DataMember(Name = "masteries", Order = 6)]
+        [DataMember(Name = "masteries", Order = 6, IsRequired = false)]
         public List<MatchParticipantMasteryDTO> Masteries { get; set; }
 
         [DataMember(Name = "stats", Order = 7)]
         public MatchParticipantStatsDTO ParticipantStats { get; set; }
 
         [DataMember(Name = "participantId", Order = 8)]
-        public string ParticipantId { get; set; }
+        public int ParticipantId { get; set; }
 
-        [DataMember(Name = "runes", Order = 9)]
+        [DataMember(Name = "runes", Order = 9, IsRequired = false)]
         public List<MatchParticipantRuneDTO> Runes { get; set; }
     }
 }

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace RiotDataSource.RiotRestAPI
 {
     [DataContract]
-    class MatchParticipantTimelineCreepsDTO
+    class MatchParticipantTimelineDeltaDTO
     {
         [DataMember(Name = "zeroToTen", Order = 0)]
         public double ZeroToTen { get; set; }

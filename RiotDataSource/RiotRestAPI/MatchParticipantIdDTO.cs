@@ -8,11 +8,9 @@ using System.Threading.Tasks;
 namespace RiotDataSource.RiotRestAPI
 {
     [DataContract]
-    class MatchParticipantStatsDTO
+    class MatchParticipantIdDTO
     {
-        [DataMember(Name = "winner")]
-        public bool WinnerFlag { get; set; }
-
-
+        [DataMember(Name = "participantId", Order = 0)]
+        public int ParticipantId { get; set; }
     }
 }

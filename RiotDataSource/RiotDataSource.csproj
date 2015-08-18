@@ -58,11 +58,12 @@
     <Compile Include="RiotRestAPI\MatchDTO.cs" />
     <Compile Include="RiotRestAPI\APIConnection.cs" />
     <Compile Include="RiotRestAPI\MatchParticipantDTO.cs" />
+    <Compile Include="RiotRestAPI\MatchParticipantIdDTO.cs" />
     <Compile Include="RiotRestAPI\MatchParticipantMasteryDTO.cs" />
     <Compile Include="RiotRestAPI\MatchParticipantRuneDTO.cs" />
     <Compile Include="RiotRestAPI\MatchParticipantStatsDTO.cs" />
-    <Compile Include="RiotRestAPI\MatchParticipantTimelineCreepsDTO.cs" />
     <Compile Include="RiotRestAPI\MatchParticipantTimelineDTO.cs" />
+    <Compile Include="RiotRestAPI\MatchParticipantTimelineDeltaDTO.cs" />
     <Compile Include="RiotRestAPI\MatchTeamDTO.cs" />
     <Compile Include="SeedData\MatchListing.cs" />
     <Compile Include="SeedData\MatchListingManager.cs" />
