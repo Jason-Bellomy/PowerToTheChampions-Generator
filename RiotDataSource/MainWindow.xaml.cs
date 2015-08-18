@@ -29,7 +29,8 @@ namespace RiotDataSource
         private string _RootDataCacheFileDir_ = "Y:\\Documents\\PowerToTheChampions-Generator\\DataCache\\";
 
         private List<SeedData.MatchListing> _matchIdFiles = new List<SeedData.MatchListing>();
-        private bool _cacheMatchJson = false;
+
+        private MatchManager _matchManager;
         
         public MainWindow()
         {
@@ -42,6 +43,10 @@ namespace RiotDataSource
 
             string[] pathsToCacheData = new string[] { applicationPath, "..", "..", "..", "CachedData" };
             _RootDataCacheFileDir_ = System.IO.Path.Combine(pathsToCacheData);
+
+            string rawMatchDataDirectory = System.IO.Path.Combine(_RootDataCacheFileDir_, "RawMatchData");
+            string matchDataDTODirectory = System.IO.Path.Combine(_RootDataCacheFileDir_, "MatchData");
+            _matchManager = new MatchManager(rawMatchDataDirectory, matchDataDTODirectory);
         }
 
         private string _log;
@@ -58,12 +63,12 @@ namespace RiotDataSource
             }
         }
 
-        private void Start_Pulling_From_API(object sender, RoutedEventArgs e)
+        private void Update_Match_Cache(object sender, RoutedEventArgs e)
         {
-            ThreadPool.QueueUserWorkItem(ReadMatchesFromAPI);
+            ThreadPool.QueueUserWorkItem(UpdateMatchCache);
         }
 
-        private void ReadMatchesFromAPI(object state)
+        private void UpdateMatchCache(object state)
         {
             if (_matchIdFiles.Count == 0)
             {
@@ -71,17 +76,8 @@ namespace RiotDataSource
                 return;
             }
 
-            if (_cacheMatchJson)
-            {
-                log = "Starting to pull and cache matches...";
-                string rootMatchDataDirectory = System.IO.Path.Combine(_RootDataCacheFileDir_, "MatchData");
-                MatchManager.CacheMatchesFromAPI(_matchIdFiles, rootMatchDataDirectory);
-            }
-            else
-            {
-                log = "Pulling matches...";
-                MatchManager.ReadMatchesFromAPI(_matchIdFiles);
-            }
+            LogProgress("Starting to pull and cache matches...");
+            _matchManager.CacheMatchesFromAPI(_matchIdFiles);
         }
 
         private void LogProgress(string logMessage)
@@ -121,28 +117,6 @@ namespace RiotDataSource
             _matchIdFiles = SeedData.MatchListingManager.LoadMatchListingsFromDisk(rootDataDirectory);
 
             log = "Successfully loaded match ID listings from cache.";
-        }
-
-        private void CheckBox_Checked(object sender, RoutedEventArgs e)
-        {
-            HandleCheckBoxState(sender as CheckBox);
-        }
-
-        private void CheckBox_Unchecked(object sender, RoutedEventArgs e)
-        {
-            HandleCheckBoxState(sender as CheckBox);
-        }
-
-        private void HandleCheckBoxState(CheckBox checkbox)
-        {
-            if (checkbox.IsChecked.HasValue)
-            {
-                _cacheMatchJson = checkbox.IsChecked.Value;
-            }
-            else
-            {
-                _cacheMatchJson = false;
-            }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

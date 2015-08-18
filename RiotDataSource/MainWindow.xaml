@@ -12,15 +12,13 @@
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
         <StackPanel Width="Auto" HorizontalAlignment="Left" Orientation="Horizontal">
-            <Button Content="Read Match Files" Margin="10,10,0,0" Click="Read_Input_Match_File" />
-            <Button Content="Write Match Listings" Margin="10,10,0,0" Click="Write_Match_DataFiles" />
-            <Button Content="Load Match Listings" Margin="10,10,0,0" Click="Load_Match_DataFiles" />
+            <Button Content="Load Cached Match Listings" Margin="10,10,0,0" Click="Load_Match_DataFiles" />
+            <Button Content="Read Match Seed Files" Margin="10,10,0,0" Click="Read_Input_Match_File" IsEnabled="False"/>
+            <Button Content="Write Match Listing Cache" Margin="10,10,0,0" Click="Write_Match_DataFiles" IsEnabled="False"/>
         </StackPanel>
         <StackPanel Width="Auto" HorizontalAlignment="Left" Orientation="Horizontal" Grid.Row="1">
-            <Button Content="Start Pulling" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="75" 
-                    Click="Start_Pulling_From_API"/>
-            <CheckBox Content="Cache Entries" HorizontalAlignment="Left" Margin="10,10,0,0" Grid.Row="1" Grid.RowSpan="2" VerticalAlignment="Top"
-                      Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked"/>
+            <Button Content="Update Match Cache" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="Auto" 
+                    Click="Update_Match_Cache"/>
         </StackPanel>
         <TextBlock HorizontalAlignment="Left" Margin="10,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="276" Width="500" Grid.Row="2" Text="{Binding log}" />
     </Grid>

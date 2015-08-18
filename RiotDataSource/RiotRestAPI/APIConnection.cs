@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Net;
 using System.Runtime.Serialization.Json;
+using System.IO;
 
 namespace RiotDataSource.RiotRestAPI
 {
@@ -15,7 +16,7 @@ namespace RiotDataSource.RiotRestAPI
             return "https://na.api.pvp.net/api/lol";
         }
 
-        public static T Get<T>(string resource, ref bool hitRateLimit)
+        public static T Get<T>(string resource, ref bool hitRateLimit, ref string rawResponse)
         {
             hitRateLimit = false;
 
@@ -28,9 +29,23 @@ namespace RiotDataSource.RiotRestAPI
             {
                 using (HttpWebResponse response = webRequest.GetResponse() as HttpWebResponse)
                 {
-                    DataContractJsonSerializer jsonSerializer = new DataContractJsonSerializer(typeof(T));
-                    object objResponse = jsonSerializer.ReadObject(response.GetResponseStream());
-                    return (T)Convert.ChangeType(objResponse, typeof(T));
+                    String responseString;
+                    using (Stream stream = response.GetResponseStream())
+                    {
+                        StreamReader reader = new StreamReader(stream, Encoding.UTF8);
+                        responseString = reader.ReadToEnd();
+                        rawResponse = responseString;
+                        stream.Close();
+                    }
+
+                    using (Stream stream = new MemoryStream(Encoding.UTF8.GetBytes(responseString)))
+                    {
+                        // Build the DTO object from the response
+                        DataContractJsonSerializer jsonSerializer = new DataContractJsonSerializer(typeof(T));
+                        object objResponse = jsonSerializer.ReadObject(stream);
+                        stream.Close();
+                        return (T)Convert.ChangeType(objResponse, typeof(T));
+                    }
                 }
             }
             catch (WebException e)
