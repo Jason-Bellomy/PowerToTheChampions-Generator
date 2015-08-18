@@ -1,3 +1,5 @@
 *.suo
 RiotDataSource/bin/Debug/*
 RiotDataSource/obj/Debug/*
+
+CachedData/MatchData/*

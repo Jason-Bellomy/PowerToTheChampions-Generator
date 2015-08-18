@@ -64,9 +64,21 @@ namespace RiotDataSource.CacheData
             return match;
         }
 
-        protected RiotRestAPI.MatchDTO LoadMatchFromRawFile(SeedData.MatchListing listing, string matchId)
+        protected RiotRestAPI.MatchDTO LoadMatchFromRawFile(SeedData.MatchListing matchListing, string matchId)
         {
-            return null;
+            RiotRestAPI.MatchDTO match = null;
+
+            string[] rawfilePathParts = new string[] { _rawMatchDataDirectory, BuildMatchFileName(matchListing, matchId) };
+            string filePath = System.IO.Path.Combine(rawfilePathParts);
+            FileStream fstream = new FileStream(filePath, FileMode.Open);
+            DataContractJsonSerializer jsonSerializer = new DataContractJsonSerializer(typeof(RiotRestAPI.MatchDTO));
+            object objResponse = jsonSerializer.ReadObject(fstream);
+            fstream.Close();
+            match = (RiotRestAPI.MatchDTO)Convert.ChangeType(objResponse, typeof(RiotRestAPI.MatchDTO));
+
+            LogProgress("Loaded match " + matchListing.region + "-" + matchId + " from cached data.");
+
+            return match;
         }
 
         protected RiotRestAPI.MatchDTO LoadMatchFromAPI(SeedData.MatchListing listing, string matchId, ref string rawResponse)
