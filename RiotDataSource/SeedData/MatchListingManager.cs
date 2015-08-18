@@ -72,7 +72,8 @@ namespace RiotDataSource.SeedData
                 FileStream fstream = new FileStream(fileName, FileMode.Open);
                 DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(MatchListing));
                 object rawListing = ser.ReadObject(fstream);
-                matchListings.Add((MatchListing)rawListing);
+                MatchListing castListing = (MatchListing)rawListing;
+                matchListings.Add(castListing);
                 fstream.Close();
             }
 

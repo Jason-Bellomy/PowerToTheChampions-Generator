@@ -39,6 +39,50 @@ namespace RiotDataSource.CacheData
             return File.Exists(filePath);
         }
 
+        public bool DoesCachedCopyOfMatchDTOExist(SeedData.MatchListing matchListing, string matchId)
+        {
+            string[] rawfilePathParts = new string[] { _matchDataDTODirectory, BuildMatchFileName(matchListing, matchId) };
+            string filePath = System.IO.Path.Combine(rawfilePathParts);
+
+            return File.Exists(filePath);
+        }
+
+        public void BeautifyCachedCopyOfMatches(List<SeedData.MatchListing> matchListings)
+        {
+            foreach (SeedData.MatchListing matchListing in matchListings)
+            {
+                foreach (string matchId in matchListing.MatchIds)
+                {
+                    if (DoesRawCachedCopyOfMatchExist(matchListing, matchId))
+                    {
+                        string[] rawfilePathParts = new string[] { _rawMatchDataDirectory, BuildMatchFileName(matchListing, matchId) };
+                        string filePath = System.IO.Path.Combine(rawfilePathParts);
+                        BeautifyJSONFile(filePath);
+                    }
+
+                    if (DoesCachedCopyOfMatchDTOExist(matchListing, matchId))
+                    {
+                        string[] dtoFilePathParts = new string[] { _matchDataDTODirectory, BuildMatchFileName(matchListing, matchId) };
+                        string filePath = System.IO.Path.Combine(dtoFilePathParts);
+                        BeautifyJSONFile(filePath);
+                    }
+                }
+            }
+        }
+
+        public void BeautifyJSONFile(string filePath)
+        {
+            StreamReader filestream = new StreamReader(filePath);
+            string rawJSON = filestream.ReadToEnd();
+            filestream.Close();
+            string prettyJSON = JsonPrettyPrinterPlus.PrettyPrinterExtensions.PrettyPrintJson(rawJSON);
+
+            FileStream fstream = new FileStream(filePath, FileMode.Create);
+            byte[] data = Encoding.ASCII.GetBytes(prettyJSON);
+            fstream.Write(data, 0, data.Length);
+            fstream.Close();
+        }
+
         public RiotRestAPI.MatchDTO LoadMatch(SeedData.MatchListing listing, string matchId)
         {
             RiotRestAPI.MatchDTO match = null;
@@ -53,10 +97,12 @@ namespace RiotDataSource.CacheData
                 match = LoadMatchFromAPI(listing, matchId, ref rawResponse);
 
                 // Save the raw response file to speed up future queries
+                string prettyJSON = JsonPrettyPrinterPlus.PrettyPrinterExtensions.PrettyPrintJson(rawResponse);
+
                 string[] rawfilePathParts = new string[] { _rawMatchDataDirectory, listing.region + "-" + matchId + ".json" };
                 string filePath = System.IO.Path.Combine(rawfilePathParts);
                 FileStream fstream = new FileStream(filePath, FileMode.Create);
-                byte[] data = Encoding.ASCII.GetBytes(rawResponse);
+                byte[] data = Encoding.ASCII.GetBytes(prettyJSON);
                 fstream.Write(data, 0, data.Length);
                 fstream.Close();
             }
@@ -90,7 +136,10 @@ namespace RiotDataSource.CacheData
             {
                 string resource = "/" + listing.region + "/v2.2/match/" + matchId;
 
-                match = RiotRestAPI.APIConnection.Get<RiotRestAPI.MatchDTO>(resource, ref rateLimitHit, ref rawResponse);
+                Dictionary<string, string> queryParams = new Dictionary<string, string>();
+                queryParams["includeTimeline"] = "true";
+                match = RiotRestAPI.APIConnection.Get<RiotRestAPI.MatchDTO>(resource, queryParams,
+                                                                            ref rateLimitHit, ref rawResponse);
                 if (match != null)
                 {
                     LogProgress("Loaded match " + listing.region + "-" + matchId + " from the API.");
@@ -117,11 +166,17 @@ namespace RiotDataSource.CacheData
                 {
                     RiotRestAPI.MatchDTO match = LoadMatch(listing, matchId);
 
+                    DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(RiotRestAPI.MatchDTO));
+                    MemoryStream mstream = new MemoryStream();
+                    ser.WriteObject(mstream, match);
+                    string uglyJSON = Encoding.Default.GetString(mstream.ToArray());
+                    string prettyJSON = JsonPrettyPrinterPlus.PrettyPrinterExtensions.PrettyPrintJson(uglyJSON);
+
                     string[] filePathParts = new string[] { _matchDataDTODirectory, BuildMatchFileName(listing, matchId) };
                     string filePath = System.IO.Path.Combine(filePathParts);
                     FileStream fstream = new FileStream(filePath, FileMode.Create);
-                    DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(RiotRestAPI.MatchDTO));
-                    ser.WriteObject(fstream, match);
+                    byte[] data = Encoding.ASCII.GetBytes(prettyJSON);
+                    fstream.Write(data, 0, data.Length);
                     fstream.Close();
                 }
             }

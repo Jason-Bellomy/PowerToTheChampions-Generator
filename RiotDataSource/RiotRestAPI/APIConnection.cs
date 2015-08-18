@@ -16,12 +16,21 @@ namespace RiotDataSource.RiotRestAPI
             return "https://na.api.pvp.net/api/lol";
         }
 
-        public static T Get<T>(string resource, ref bool hitRateLimit, ref string rawResponse)
+        public static T Get<T>(string resource, Dictionary<string, string> queryParams, 
+                               ref bool hitRateLimit, ref string rawResponse)
         {
             hitRateLimit = false;
 
             string serviceURL = GetBaseURI() + resource;
             serviceURL += "?api_key=e0cde70b-3b01-41ea-8d79-8b528f119fd4";
+
+            if (queryParams != null)
+            {
+                foreach (var param in queryParams)
+                {
+                    serviceURL += "&" + param.Key + "=" + param.Value;
+                }
+            }
 
             HttpWebRequest webRequest = WebRequest.Create(serviceURL) as HttpWebRequest;
             webRequest.UserAgent = "Other";

@@ -78,6 +78,25 @@ namespace RiotDataSource
 
             LogProgress("Starting to pull and cache matches...");
             _matchManager.CacheMatchesFromAPI(_matchIdFiles);
+            LogProgress("Finished caching matches.");
+        }
+
+        private void Beautify_Cached_Responses(object state, RoutedEventArgs e)
+        {
+            ThreadPool.QueueUserWorkItem(BeautifyCachedMatches);
+        }
+        
+        private void BeautifyCachedMatches(object state)
+        {
+            if (_matchIdFiles.Count == 0)
+            {
+                log = "No match ID listings to use for match IDs.";
+                return;
+            }
+
+            LogProgress("Starting beautification...");
+            _matchManager.BeautifyCachedCopyOfMatches(_matchIdFiles);
+            LogProgress("Finished beautification.");
         }
 
         private void LogProgress(string logMessage)
