@@ -59,6 +59,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="CacheData\MatchManager.cs" />
+    <Compile Include="RiotRestAPI\APIConfig.cs" />
     <Compile Include="RiotRestAPI\MatchDTO.cs" />
     <Compile Include="RiotRestAPI\APIConnection.cs" />
     <Compile Include="RiotRestAPI\MatchParticipantDTO.cs" />

@@ -11,18 +11,25 @@ namespace RiotDataSource.RiotRestAPI
 {
     class APIConnection
     {
+        private APIConfig _apiConfig = null;
+
+        public APIConnection(APIConfig apiConfig)
+        {
+            _apiConfig = apiConfig;
+        }
+
         public static string GetBaseURI()
         {
             return "https://na.api.pvp.net/api/lol";
         }
 
-        public static T Get<T>(string resource, Dictionary<string, string> queryParams, 
-                               ref bool hitRateLimit, ref string rawResponse)
+        public T Get<T>(string resource, Dictionary<string, string> queryParams, 
+                        ref bool hitRateLimit, ref string rawResponse)
         {
             hitRateLimit = false;
 
             string serviceURL = GetBaseURI() + resource;
-            serviceURL += "?api_key=e0cde70b-3b01-41ea-8d79-8b528f119fd4";
+            serviceURL += "?api_key=" + _apiConfig.ApiKey;
 
             if (queryParams != null)
             {

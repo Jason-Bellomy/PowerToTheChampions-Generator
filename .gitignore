@@ -4,3 +4,5 @@ RiotDataSource/obj/Debug/*
 
 CachedData/MatchData/*
 CachedData/RawMatchData/*
+
+CachedData/ApiConfig/apiConfig.json

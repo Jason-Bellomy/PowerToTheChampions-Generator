@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RiotDataSource.RiotRestAPI;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -15,8 +16,11 @@ namespace RiotDataSource.CacheData
         private string _rawMatchDataDirectory = "";
         private string _matchDataDTODirectory = "";
 
-        public MatchManager(string rawMatchDataDirectory, string matchDataDTODirectory)
+        private APIConnection _apiConnection = null;
+
+        public MatchManager(APIConnection apiConnection, string rawMatchDataDirectory, string matchDataDTODirectory)
         {
+            _apiConnection = apiConnection;
             _rawMatchDataDirectory = rawMatchDataDirectory;
             _matchDataDTODirectory = matchDataDTODirectory;
         }
@@ -138,8 +142,8 @@ namespace RiotDataSource.CacheData
 
                 Dictionary<string, string> queryParams = new Dictionary<string, string>();
                 queryParams["includeTimeline"] = "true";
-                match = RiotRestAPI.APIConnection.Get<RiotRestAPI.MatchDTO>(resource, queryParams,
-                                                                            ref rateLimitHit, ref rawResponse);
+                match = _apiConnection.Get<RiotRestAPI.MatchDTO>(resource, queryParams,
+                                                                 ref rateLimitHit, ref rawResponse);
                 if (match != null)
                 {
                     LogProgress("Loaded match " + listing.region + "-" + matchId + " from the API.");
