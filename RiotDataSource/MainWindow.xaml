@@ -20,7 +20,7 @@
             <Button Content="Update Match Cache" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="Auto" 
                     Click="Update_Match_Cache"/>
             <Button Content="Beautify Cached Responses" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="Auto"
-                    Click="Beautify_Cached_Responses"/>
+                    Click="Beautify_Cached_Responses" IsEnabled="False"/>
         </StackPanel>
         <TextBlock HorizontalAlignment="Left" Margin="10,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="276" Width="500" Grid.Row="2" Text="{Binding log}" />
     </Grid>
