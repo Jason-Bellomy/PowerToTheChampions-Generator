@@ -51,5 +51,8 @@ namespace RiotDataSource.RiotRestAPI
 
         [DataMember(Name = "teams", Order = 13)]
         public List<MatchTeamDTO> MatchTeams { get; set; }
+
+        [DataMember(Name = "timeline", Order = 14)]
+        public MatchTimelineDTO Timeline { get; set; }
     }
 }

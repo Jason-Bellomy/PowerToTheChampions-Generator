@@ -69,6 +69,12 @@
     <Compile Include="RiotRestAPI\MatchParticipantTimelineDTO.cs" />
     <Compile Include="RiotRestAPI\MatchParticipantTimelineDeltaDTO.cs" />
     <Compile Include="RiotRestAPI\MatchTeamDTO.cs" />
+    <Compile Include="RiotRestAPI\MatchTimelineDTO.cs" />
+    <Compile Include="RiotRestAPI\MatchTimelineFrameDTO.cs" />
+    <Compile Include="RiotRestAPI\MatchTimelineFrameEventDTO.cs" />
+    <Compile Include="RiotRestAPI\MatchTimelineParticipantFrameDTO.cs" />
+    <Compile Include="RiotRestAPI\MatchTimelineParticipantFramesDTO.cs" />
+    <Compile Include="RiotRestAPI\PositionDTO.cs" />
     <Compile Include="SeedData\MatchListing.cs" />
     <Compile Include="SeedData\MatchListingManager.cs" />
     <Page Include="MainWindow.xaml">
