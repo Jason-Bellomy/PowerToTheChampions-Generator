@@ -3,3 +3,4 @@ RiotDataSource/bin/Debug/*
 RiotDataSource/obj/Debug/*
 
 CachedData/MatchData/*
+CachedData/RawMatchData/*
