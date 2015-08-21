@@ -58,7 +58,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="CacheData\ItemManager.cs" />
     <Compile Include="CacheData\MatchManager.cs" />
+    <Compile Include="Logging\LogManager.cs" />
+    <Compile Include="Logging\LogProcessor.cs" />
     <Compile Include="RiotRestAPI\APIConfig.cs" />
     <Compile Include="RiotRestAPI\MatchDTO.cs" />
     <Compile Include="RiotRestAPI\APIConnection.cs" />

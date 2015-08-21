@@ -23,7 +23,7 @@ namespace RiotDataSource
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window, INotifyPropertyChanged
+    public partial class MainWindow : Window, INotifyPropertyChanged, Logging.ILogProcessor
     {
         private string _RootSeedDataFileDir_;
         private string _RootDataCacheFileDir_;
@@ -31,14 +31,14 @@ namespace RiotDataSource
         private RiotRestAPI.APIConfig _apiConfig = null;
         private RiotRestAPI.APIConnection _apiConnection = null;
 
-        private List<SeedData.MatchListing> _matchIdFiles = new List<SeedData.MatchListing>();
-
         private MatchManager _matchManager;
         
         public MainWindow()
         {
             InitializeComponent();
             this.DataContext = this;
+
+            Logging.LogManager.AddLogProcessor(this);
 
             string applicationPath = Directory.GetCurrentDirectory();
             string[] pathsToSeedData = new string[] { applicationPath, "..", "..", "..", "AP_ITEM_DATASET" };
@@ -58,6 +58,60 @@ namespace RiotDataSource
             _matchManager = new MatchManager(_apiConnection, rawMatchDataDirectory, matchDataDTODirectory);
         }
 
+        private string _log;
+        public string log
+        {
+            private set
+            {
+                _log = value;
+                OnPropertyChanged("log");
+            }
+            get
+            {
+                return _log;
+            }
+        }
+
+        public bool CanLoadMatchListings
+        {
+            get
+            {
+                return (_matchListings.Count == 0);
+            }
+        }
+
+        public bool CanCacheMatchData
+        {
+            get
+            {
+                return (_selectedMatchListing != null);
+            }
+        }
+
+        private List<SeedData.MatchListing> _matchListings = new List<SeedData.MatchListing>();
+        public List<SeedData.MatchListing> MatchListings
+        {
+            get
+            {
+                return _matchListings;
+            }
+        }
+
+        private SeedData.MatchListing _selectedMatchListing = null;
+        public SeedData.MatchListing SelectedMatchListing
+        {
+            get
+            {
+                return _selectedMatchListing;
+            }
+            set
+            {
+                _selectedMatchListing = value;
+                OnPropertyChanged("SelectedMatchListing");
+                OnPropertyChanged("CanCacheMatchData");
+            }
+        }
+
         private void LoadAPIConfig(string pathToAPIConfig)
         {
             if (!File.Exists(pathToAPIConfig))
@@ -74,20 +128,6 @@ namespace RiotDataSource
             LogProgress("Loaded API Config: " + _apiConfig.ApiKey);
         }
 
-        private string _log;
-        public string log
-        {
-            private set
-            {
-                _log = value;
-                OnPropertyChanged("log");
-            }
-            get
-            {
-                return _log;
-            }
-        }
-
         private void Update_Match_Cache(object sender, RoutedEventArgs e)
         {
             ThreadPool.QueueUserWorkItem(UpdateMatchCache);
@@ -95,14 +135,20 @@ namespace RiotDataSource
 
         private void UpdateMatchCache(object state)
         {
-            if (_matchIdFiles.Count == 0)
+            if (_matchListings.Count == 0)
             {
-                log = "No match ID listings to use for match IDs.";
+                LogProgress("No match ID listings to use for match IDs.");
                 return;
             }
 
-            LogProgress("Starting to pull and cache matches...");
-            _matchManager.CacheMatchesFromAPI(_matchIdFiles);
+            if (_selectedMatchListing == null)
+            {
+                LogProgress("No match listing selected to use for match IDs.");
+                return;
+            }
+
+            LogProgress("Starting to pull and cache matches for " + _selectedMatchListing.DisplayName + ".");
+            _matchManager.CacheMatchesFromAPI(new List<SeedData.MatchListing>() { _selectedMatchListing });
             LogProgress("Finished caching matches.");
         }
 
@@ -113,44 +159,56 @@ namespace RiotDataSource
         
         private void BeautifyCachedMatches(object state)
         {
-            if (_matchIdFiles.Count == 0)
+            if (_matchListings.Count == 0)
             {
                 log = "No match ID listings to use for match IDs.";
                 return;
             }
 
             LogProgress("Starting beautification...");
-            _matchManager.BeautifyCachedCopyOfMatches(_matchIdFiles);
+            _matchManager.BeautifyCachedCopyOfMatches(_matchListings);
             LogProgress("Finished beautification.");
         }
 
         private void LogProgress(string logMessage)
         {
-            log = logMessage + "\n" + log;
+            if (String.IsNullOrEmpty(log))
+            {
+                log = logMessage;
+            }
+            else
+            {
+                log += "\n" + logMessage;
+            }
+
+            this.Dispatcher.Invoke((Action)(() =>
+            {
+                LogScrollViewer.ScrollToEnd();
+            }));
         }
 
         private void Read_Input_Match_File(object sender, RoutedEventArgs e)
         {
-            if (_matchIdFiles.Count != 0)
+            if (_matchListings.Count != 0)
             {
                 return;
             }
 
-            _matchIdFiles = SeedData.MatchListingManager.LoadMatchDataFromSourceFiles(_RootSeedDataFileDir_);
+            _matchListings = SeedData.MatchListingManager.LoadMatchDataFromSourceFiles(_RootSeedDataFileDir_);
 
             log = "Successfully loaded match ID files.";
         }
 
         private void Write_Match_DataFiles(object sender, RoutedEventArgs e)
         {
-            if (_matchIdFiles.Count == 0)
+            if (_matchListings.Count == 0)
             {
                 log = "No match ID listings to cache.";
                 return;
             }
 
             string rootDataDirectory = System.IO.Path.Combine(_RootDataCacheFileDir_, "MatchListings");
-            SeedData.MatchListingManager.SaveMatchListingsToDisk(rootDataDirectory, _matchIdFiles);
+            SeedData.MatchListingManager.SaveMatchListingsToDisk(rootDataDirectory, _matchListings);
             
             log = "Successfully saved match ID listings to cache.";
         }
@@ -160,9 +218,11 @@ namespace RiotDataSource
             LogProgress("Beginning match ID load from cache...");
 
             string rootDataDirectory = System.IO.Path.Combine(_RootDataCacheFileDir_, "MatchListings");
-            _matchIdFiles = SeedData.MatchListingManager.LoadMatchListingsFromDisk(rootDataDirectory);
+            _matchListings = SeedData.MatchListingManager.LoadMatchListingsFromDisk(rootDataDirectory);
 
             LogProgress("Successfully loaded match ID listings from cache.");
+            OnPropertyChanged("CanLoadMatchListings");
+            OnPropertyChanged("MatchListings");
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -170,6 +230,11 @@ namespace RiotDataSource
         {
             PropertyChangedEventHandler handler = PropertyChanged;
             if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        public void ProcessLog(string logMessage)
+        {
+            LogProgress(logMessage);
         }
     }
 }

@@ -8,11 +8,19 @@ using System.Threading.Tasks;
 namespace RiotDataSource.SeedData
 {
     [DataContract]
-    class MatchListing
+    public class MatchListing
     {
         public MatchListing()
         {
             MatchIds = new List<string>();
+        }
+
+        public string DisplayName
+        {
+            get
+            {
+                return region + "-" + mode + "-" + version;
+            }
         }
 
         [DataMember]

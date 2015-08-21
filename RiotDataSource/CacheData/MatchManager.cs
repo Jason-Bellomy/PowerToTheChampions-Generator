@@ -27,7 +27,7 @@ namespace RiotDataSource.CacheData
 
         static private void LogProgress(string logMessage)
         {
-            Console.WriteLine(logMessage);
+            Logging.LogManager.LogMessage(logMessage);
         }
 
         static private string BuildMatchFileName(SeedData.MatchListing matchListing, string matchId)
@@ -122,11 +122,31 @@ namespace RiotDataSource.CacheData
             string filePath = System.IO.Path.Combine(rawfilePathParts);
             FileStream fstream = new FileStream(filePath, FileMode.Open);
             DataContractJsonSerializer jsonSerializer = new DataContractJsonSerializer(typeof(RiotRestAPI.MatchDTO));
-            object objResponse = jsonSerializer.ReadObject(fstream);
-            fstream.Close();
-            match = (RiotRestAPI.MatchDTO)Convert.ChangeType(objResponse, typeof(RiotRestAPI.MatchDTO));
+            object objResponse = null;
+            try
+            {
+                objResponse = jsonSerializer.ReadObject(fstream);
+            }
+            catch (System.Xml.XmlException ex)
+            {
+                LogProgress("XML Exception while parsing match response: " + matchListing.region + "-" + matchId + " - " + ex.Message);
+            }
+            catch (Exception ex)
+            {
+                LogProgress("Generic Exception while parsing match response: " + matchListing.region + "-" + matchId + " - " + ex.Message);
+            }
 
-            LogProgress("Loaded match " + matchListing.region + "-" + matchId + " from cached data.");
+            fstream.Close();
+            
+            if (objResponse == null)
+            {
+                LogProgress("Failed to load match " + matchListing.region + "-" + matchId + " from cached data.");
+            }
+            else
+            {
+                match = (RiotRestAPI.MatchDTO)Convert.ChangeType(objResponse, typeof(RiotRestAPI.MatchDTO));
+                LogProgress("Loaded match " + matchListing.region + "-" + matchId + " from cached data.");
+            }
 
             return match;
         }

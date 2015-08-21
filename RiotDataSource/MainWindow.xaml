@@ -12,16 +12,36 @@
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
         <StackPanel Width="Auto" HorizontalAlignment="Left" Orientation="Horizontal">
-            <Button Content="Load Cached Match Listings" Margin="10,10,0,0" Click="Load_Match_DataFiles" />
+            <Button Content="Load Cached Match Listings" Margin="10,10,0,0" Click="Load_Match_DataFiles" IsEnabled="{Binding CanLoadMatchListings}"/>
             <Button Content="Read Match Seed Files" Margin="10,10,0,0" Click="Read_Input_Match_File" IsEnabled="False"/>
             <Button Content="Write Match Listing Cache" Margin="10,10,0,0" Click="Write_Match_DataFiles" IsEnabled="False"/>
         </StackPanel>
         <StackPanel Width="Auto" HorizontalAlignment="Left" Orientation="Horizontal" Grid.Row="1">
             <Button Content="Update Match Cache" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="Auto" 
-                    Click="Update_Match_Cache"/>
+                    Click="Update_Match_Cache" IsEnabled="{Binding CanCacheMatchData}"/>
             <Button Content="Beautify Cached Responses" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="Auto"
                     Click="Beautify_Cached_Responses" IsEnabled="False"/>
         </StackPanel>
-        <TextBlock HorizontalAlignment="Left" Margin="10,10,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="276" Width="500" Grid.Row="2" Text="{Binding log}" />
+        <Grid Grid.Row="2">
+            <Grid.RowDefinitions>
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <ScrollViewer Name="LogScrollViewer" Height="Auto" Width="Auto" Margin="10" Background="#FFACACAC">
+                <TextBlock HorizontalAlignment="Left"  TextWrapping="Wrap"
+                           Height="Auto" Width="Auto" Text="{Binding log}" />
+            </ScrollViewer>
+            <ListBox Grid.Column="1" Width="Auto" Height="Auto" VerticalAlignment="Stretch"
+                     ItemsSource="{Binding MatchListings}" Margin="10" SelectedItem="{Binding SelectedMatchListing}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding DisplayName}"/>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Grid>
     </Grid>
 </Window>
