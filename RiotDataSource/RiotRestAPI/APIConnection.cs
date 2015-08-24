@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Net;
 using System.Runtime.Serialization.Json;
 using System.IO;
+using RiotDataSource.Logging;
 
 namespace RiotDataSource.RiotRestAPI
 {
@@ -67,7 +68,16 @@ namespace RiotDataSource.RiotRestAPI
             catch (WebException e)
             {
                 HttpWebResponse response = e.Response as HttpWebResponse;
-                hitRateLimit = true;
+
+                if (response.StatusCode == HttpStatusCode.NotFound)
+                {
+                    LogManager.LogMessage("404: " + serviceURL);
+                    hitRateLimit = false;
+                }
+                else
+                {
+                    hitRateLimit = true;
+                }
             }
             catch (Exception e)
             {

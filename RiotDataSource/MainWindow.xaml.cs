@@ -1,4 +1,5 @@
 ﻿using RiotDataSource.CacheData;
+using RiotDataSource.RiotRestAPI;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -32,6 +33,10 @@ namespace RiotDataSource
         private RiotRestAPI.APIConnection _apiConnection = null;
 
         private MatchManager _matchManager;
+        private ItemManager _itemManager;
+
+        private CancellationTokenSource _matchCacheCancelationSource = new CancellationTokenSource();
+        private CancellationTokenSource _itemCacheCancelationSource = new CancellationTokenSource();
         
         public MainWindow()
         {
@@ -56,6 +61,9 @@ namespace RiotDataSource
             string rawMatchDataDirectory = System.IO.Path.Combine(_RootDataCacheFileDir_, "RawMatchData");
             string matchDataDTODirectory = System.IO.Path.Combine(_RootDataCacheFileDir_, "MatchData");
             _matchManager = new MatchManager(_apiConnection, rawMatchDataDirectory, matchDataDTODirectory);
+
+            string rawItemDataDirectory = System.IO.Path.Combine(_RootDataCacheFileDir_, "RawItemData");
+            _itemManager = new ItemManager(_apiConnection, rawItemDataDirectory);
         }
 
         private string _log;
@@ -88,6 +96,14 @@ namespace RiotDataSource
             }
         }
 
+        public bool CanCacheItemData
+        {
+            get
+            {
+                return (_selectedMatchListing != null);
+            }
+        }
+
         private List<SeedData.MatchListing> _matchListings = new List<SeedData.MatchListing>();
         public List<SeedData.MatchListing> MatchListings
         {
@@ -109,6 +125,7 @@ namespace RiotDataSource
                 _selectedMatchListing = value;
                 OnPropertyChanged("SelectedMatchListing");
                 OnPropertyChanged("CanCacheMatchData");
+                OnPropertyChanged("CanCacheItemData");
             }
         }
 
@@ -148,26 +165,77 @@ namespace RiotDataSource
             }
 
             LogProgress("Starting to pull and cache matches for " + _selectedMatchListing.DisplayName + ".");
-            _matchManager.CacheMatchesFromAPI(new List<SeedData.MatchListing>() { _selectedMatchListing });
+            _matchManager.CacheMatchesFromAPI(new List<SeedData.MatchListing>() { _selectedMatchListing }, _matchCacheCancelationSource.Token);
             LogProgress("Finished caching matches.");
         }
 
-        private void Beautify_Cached_Responses(object state, RoutedEventArgs e)
+        private void Update_Item_Cache(object state, RoutedEventArgs e)
         {
-            ThreadPool.QueueUserWorkItem(BeautifyCachedMatches);
+            ThreadPool.QueueUserWorkItem(UpdateItemCache);
         }
-        
-        private void BeautifyCachedMatches(object state)
+
+        private void UpdateItemCache(object state)
         {
             if (_matchListings.Count == 0)
             {
-                log = "No match ID listings to use for match IDs.";
+                LogProgress("No match ID listings to use for match IDs.");
                 return;
             }
 
-            LogProgress("Starting beautification...");
-            _matchManager.BeautifyCachedCopyOfMatches(_matchListings);
-            LogProgress("Finished beautification.");
+            if (_selectedMatchListing == null)
+            {
+                LogProgress("No match listing selected to use for match IDs.");
+                return;
+            }
+
+            LogProgress("Starting to pull and cache items.");
+
+            foreach (string matchId in _selectedMatchListing.MatchIds)
+            {
+                if (_itemCacheCancelationSource.Token.IsCancellationRequested)
+                {
+                    break;
+                }
+
+                MatchDTO match = _matchManager.LoadMatch(_selectedMatchListing, matchId);
+                foreach (MatchTimelineFrameDTO frame in match.Timeline.Frames)
+                {
+                    if (frame.FrameEvents == null)
+                    {
+                        continue;
+                    }
+
+                    if (_itemCacheCancelationSource.Token.IsCancellationRequested)
+                    {
+                        break;
+                    }
+
+                    foreach (MatchTimelineFrameEventDTO frameEvent in frame.FrameEvents)
+                    {
+                        if (frameEvent.ItemBefore != 0)
+                        {
+                            _itemManager.LoadItem(_selectedMatchListing.region, frameEvent.ItemBefore);
+                        }
+
+                        if (frameEvent.ItemAfter != 0)
+                        {
+                            _itemManager.LoadItem(_selectedMatchListing.region, frameEvent.ItemAfter);
+                        }
+
+                        if (frameEvent.ItemId != 0)
+                        {
+                            _itemManager.LoadItem(_selectedMatchListing.region, frameEvent.ItemId);
+                        }
+                    }
+                }
+            }
+            LogProgress("Finished caching items.");
+        }
+
+        private void Stop_Cache_Tasks(object state, RoutedEventArgs e)
+        {
+            _matchCacheCancelationSource.Cancel();
+            _itemCacheCancelationSource.Cancel();
         }
 
         private void LogProgress(string logMessage)

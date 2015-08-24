@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Json;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace RiotDataSource.CacheData
@@ -140,7 +141,8 @@ namespace RiotDataSource.CacheData
             
             if (objResponse == null)
             {
-                LogProgress("Failed to load match " + matchListing.region + "-" + matchId + " from cached data.");
+                LogProgress("Failed to load match " + matchListing.region + "-" + matchId + " from cached data. Deleting file.");
+                File.Delete(filePath);
             }
             else
             {
@@ -182,12 +184,17 @@ namespace RiotDataSource.CacheData
             return match;
         }
 
-        public void CacheMatchesFromAPI(List<SeedData.MatchListing> listings)
+        public void CacheMatchesFromAPI(List<SeedData.MatchListing> listings, CancellationToken cancelationToken)
         {
             foreach (SeedData.MatchListing listing in listings)
             {
                 foreach (string matchId in listing.MatchIds)
                 {
+                    if (cancelationToken.IsCancellationRequested)
+                    {
+                        return;
+                    }
+
                     RiotRestAPI.MatchDTO match = LoadMatch(listing, matchId);
 
                     DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(RiotRestAPI.MatchDTO));

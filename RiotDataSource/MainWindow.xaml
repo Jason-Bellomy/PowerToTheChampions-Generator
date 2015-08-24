@@ -19,8 +19,10 @@
         <StackPanel Width="Auto" HorizontalAlignment="Left" Orientation="Horizontal" Grid.Row="1">
             <Button Content="Update Match Cache" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="Auto" 
                     Click="Update_Match_Cache" IsEnabled="{Binding CanCacheMatchData}"/>
-            <Button Content="Beautify Cached Responses" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="Auto"
-                    Click="Beautify_Cached_Responses" IsEnabled="False"/>
+            <Button Content="Update Item Cache" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="Auto" 
+                    Click="Update_Item_Cache" IsEnabled="{Binding CanCacheItemData}"/>
+            <Button Content="Stop Caching" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="Auto"
+                    Click="Stop_Cache_Tasks" IsEnabled="True"/>
         </StackPanel>
         <Grid Grid.Row="2">
             <Grid.RowDefinitions>
