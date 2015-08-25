@@ -58,11 +58,18 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="CacheData\ChampionManager.cs" />
     <Compile Include="CacheData\ItemManager.cs" />
     <Compile Include="CacheData\MatchManager.cs" />
     <Compile Include="Logging\LogManager.cs" />
     <Compile Include="Logging\LogProcessor.cs" />
     <Compile Include="RiotRestAPI\APIConfig.cs" />
+    <Compile Include="RiotRestAPI\Champions\ChampionDTO.cs" />
+    <Compile Include="RiotRestAPI\Champions\ChampSkinDataDTO.cs" />
+    <Compile Include="RiotRestAPI\Champions\ChampPassiveDataDTO.cs" />
+    <Compile Include="RiotRestAPI\Champions\ChampImageDataDTO.cs" />
+    <Compile Include="RiotRestAPI\Champions\ChampInfoDataDTO.cs" />
+    <Compile Include="RiotRestAPI\Champions\ChampStatsDataDTO.cs" />
     <Compile Include="RiotRestAPI\Common\BasicDataStatsDTO.cs" />
     <Compile Include="RiotRestAPI\Items\ItemDTO.cs" />
     <Compile Include="RiotRestAPI\Items\ItemGoldDataDTO.cs" />
@@ -126,6 +133,7 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

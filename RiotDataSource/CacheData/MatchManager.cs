@@ -184,7 +184,7 @@ namespace RiotDataSource.CacheData
             return match;
         }
 
-        public void CacheMatchesFromAPI(List<SeedData.MatchListing> listings, CancellationToken cancelationToken)
+        public bool CacheMatchesFromAPI(List<SeedData.MatchListing> listings, CancellationToken cancelationToken)
         {
             foreach (SeedData.MatchListing listing in listings)
             {
@@ -192,7 +192,7 @@ namespace RiotDataSource.CacheData
                 {
                     if (cancelationToken.IsCancellationRequested)
                     {
-                        return;
+                        return true;
                     }
 
                     RiotRestAPI.MatchDTO match = LoadMatch(listing, matchId);
@@ -211,6 +211,7 @@ namespace RiotDataSource.CacheData
                     fstream.Close();
                 }
             }
+            return false;
         }
     }
 }

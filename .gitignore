@@ -6,6 +6,7 @@ CachedData/ItemData/*
 CachedData/MatchData/*
 CachedData/RawMatchData/*
 CachedData/RawItemData/*
+CachedData/RawChampionData/*
 
 CachedData/ApiConfig/apiConfig.json
 

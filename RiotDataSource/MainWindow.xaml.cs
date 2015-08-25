@@ -34,9 +34,11 @@ namespace RiotDataSource
 
         private MatchManager _matchManager;
         private ItemManager _itemManager;
+        private ChampionManager _championManager;
 
         private CancellationTokenSource _matchCacheCancelationSource = new CancellationTokenSource();
         private CancellationTokenSource _itemCacheCancelationSource = new CancellationTokenSource();
+        private CancellationTokenSource _champCacheCancelationSource = new CancellationTokenSource();
         
         public MainWindow()
         {
@@ -64,6 +66,9 @@ namespace RiotDataSource
 
             string rawItemDataDirectory = System.IO.Path.Combine(_RootDataCacheFileDir_, "RawItemData");
             _itemManager = new ItemManager(_apiConnection, rawItemDataDirectory);
+
+            string rawChampionDataDirectory = System.IO.Path.Combine(_RootDataCacheFileDir_, "RawChampionData");
+            _championManager = new ChampionManager(_apiConnection, rawChampionDataDirectory);
         }
 
         private string _log;
@@ -104,6 +109,14 @@ namespace RiotDataSource
             }
         }
 
+        public bool CanCacheChampData
+        {
+            get
+            {
+                return (_selectedMatchListing != null);
+            }
+        }
+
         private List<SeedData.MatchListing> _matchListings = new List<SeedData.MatchListing>();
         public List<SeedData.MatchListing> MatchListings
         {
@@ -126,6 +139,7 @@ namespace RiotDataSource
                 OnPropertyChanged("SelectedMatchListing");
                 OnPropertyChanged("CanCacheMatchData");
                 OnPropertyChanged("CanCacheItemData");
+                OnPropertyChanged("CanCacheChampData");
             }
         }
 
@@ -165,7 +179,13 @@ namespace RiotDataSource
             }
 
             LogProgress("Starting to pull and cache matches for " + _selectedMatchListing.DisplayName + ".");
-            _matchManager.CacheMatchesFromAPI(new List<SeedData.MatchListing>() { _selectedMatchListing }, _matchCacheCancelationSource.Token);
+            var cancelRequest = _matchManager.CacheMatchesFromAPI(new List<SeedData.MatchListing>() { _selectedMatchListing }, _matchCacheCancelationSource.Token);
+            if (cancelRequest)
+            {
+                _matchCacheCancelationSource = new CancellationTokenSource();
+                _itemCacheCancelationSource = new CancellationTokenSource();
+                _champCacheCancelationSource = new CancellationTokenSource();
+            }
             LogProgress("Finished caching matches.");
         }
 
@@ -194,6 +214,9 @@ namespace RiotDataSource
             {
                 if (_itemCacheCancelationSource.Token.IsCancellationRequested)
                 {
+                    _matchCacheCancelationSource = new CancellationTokenSource();
+                    _itemCacheCancelationSource = new CancellationTokenSource();
+                    _champCacheCancelationSource = new CancellationTokenSource();
                     break;
                 }
 
@@ -212,6 +235,11 @@ namespace RiotDataSource
 
                     foreach (MatchTimelineFrameEventDTO frameEvent in frame.FrameEvents)
                     {
+                        if (_itemCacheCancelationSource.Token.IsCancellationRequested)
+                        {
+                            break;
+                        }
+
                         if (frameEvent.ItemBefore != 0)
                         {
                             _itemManager.LoadItem(_selectedMatchListing.region, frameEvent.ItemBefore);
@@ -232,10 +260,62 @@ namespace RiotDataSource
             LogProgress("Finished caching items.");
         }
 
+        private void Update_Champ_Cache(object state, RoutedEventArgs e)
+        {
+            ThreadPool.QueueUserWorkItem(UpdateChampCache);
+        }
+
+        private void UpdateChampCache(object state)
+        {
+            if (_matchListings.Count == 0)
+            {
+                LogProgress("No match ID listings to use for match IDs.");
+                return;
+            }
+
+            if (_selectedMatchListing == null)
+            {
+                LogProgress("No match listing selected to use for match IDs.");
+                return;
+            }
+
+            LogProgress("Starting to pull and cache champions.");
+
+            foreach (string matchId in _selectedMatchListing.MatchIds)
+            {
+                if (_champCacheCancelationSource.Token.IsCancellationRequested)
+                {
+                    _matchCacheCancelationSource = new CancellationTokenSource();
+                    _itemCacheCancelationSource = new CancellationTokenSource();
+                    _champCacheCancelationSource = new CancellationTokenSource();
+                    break;
+                }
+
+                MatchDTO match = _matchManager.LoadMatch(_selectedMatchListing, matchId);
+                foreach (MatchParticipantDTO participant in match.MatchParticipants)
+                {
+                    if (participant == null || participant.ParticipantId < 0)
+                    {
+                        continue;
+                    }
+
+                    if (_champCacheCancelationSource.Token.IsCancellationRequested)
+                    {
+                        break;
+                    }
+
+                    _championManager.LoadChampion(_selectedMatchListing.region, participant.ChampionId);
+
+                }
+            }
+            LogProgress("Finished caching champions.");
+        }
+
         private void Stop_Cache_Tasks(object state, RoutedEventArgs e)
         {
             _matchCacheCancelationSource.Cancel();
             _itemCacheCancelationSource.Cancel();
+            _champCacheCancelationSource.Cancel();
         }
 
         private void LogProgress(string logMessage)

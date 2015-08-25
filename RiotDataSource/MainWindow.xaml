@@ -21,6 +21,8 @@
                     Click="Update_Match_Cache" IsEnabled="{Binding CanCacheMatchData}"/>
             <Button Content="Update Item Cache" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="Auto" 
                     Click="Update_Item_Cache" IsEnabled="{Binding CanCacheItemData}"/>
+            <Button Content="Update Champion Cache" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="Auto" 
+                    Click="Update_Champ_Cache" IsEnabled="{Binding CanCacheChampData}"/>
             <Button Content="Stop Caching" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="Auto"
                     Click="Stop_Cache_Tasks" IsEnabled="True"/>
         </StackPanel>
