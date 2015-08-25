@@ -58,9 +58,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="CacheData\CacheDirectoryManager.cs" />
     <Compile Include="CacheData\ChampionManager.cs" />
     <Compile Include="CacheData\ItemManager.cs" />
     <Compile Include="CacheData\MatchManager.cs" />
+    <Compile Include="CacheData\VersionManager.cs" />
     <Compile Include="Logging\LogManager.cs" />
     <Compile Include="Logging\LogProcessor.cs" />
     <Compile Include="RiotRestAPI\APIConfig.cs" />

@@ -1,32 +1,22 @@
 ﻿<Window x:Class="RiotDataSource.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="MainWindow" Height="350" Width="525">
+        Title="MainWindow" Height="531.445" Width="951.723">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition/>
             <RowDefinition Height="Auto"/>
             <RowDefinition/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition/>
+            <ColumnDefinition />
         </Grid.ColumnDefinitions>
-        <StackPanel Width="Auto" HorizontalAlignment="Left" Orientation="Horizontal">
-            <Button Content="Load Cached Match Listings" Margin="10,10,0,0" Click="Load_Match_DataFiles" IsEnabled="{Binding CanLoadMatchListings}"/>
-            <Button Content="Read Match Seed Files" Margin="10,10,0,0" Click="Read_Input_Match_File" IsEnabled="False"/>
-            <Button Content="Write Match Listing Cache" Margin="10,10,0,0" Click="Write_Match_DataFiles" IsEnabled="False"/>
+        <StackPanel Width="Auto" HorizontalAlignment="Left" Orientation="Horizontal" Grid.Row="0">
+            <Button Content="Load Cached Match Listings" Margin="10,10,0,0"
+                    Click="Load_Match_DataFiles" IsEnabled="{Binding CanLoadMatchListings}"/>
         </StackPanel>
-        <StackPanel Width="Auto" HorizontalAlignment="Left" Orientation="Horizontal" Grid.Row="1">
-            <Button Content="Update Match Cache" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="Auto" 
-                    Click="Update_Match_Cache" IsEnabled="{Binding CanCacheMatchData}"/>
-            <Button Content="Update Item Cache" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="Auto" 
-                    Click="Update_Item_Cache" IsEnabled="{Binding CanCacheItemData}"/>
-            <Button Content="Update Champion Cache" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="Auto" 
-                    Click="Update_Champ_Cache" IsEnabled="{Binding CanCacheChampData}"/>
-            <Button Content="Stop Caching" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="Auto"
-                    Click="Stop_Cache_Tasks" IsEnabled="True"/>
-        </StackPanel>
-        <Grid Grid.Row="2">
+        <Grid Grid.Row="1">
             <Grid.RowDefinitions>
                 <RowDefinition />
             </Grid.RowDefinitions>
@@ -43,6 +33,35 @@
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <TextBlock Text="{Binding DisplayName}"/>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Grid>
+        <StackPanel Width="Auto" HorizontalAlignment="Left" Orientation="Horizontal" Grid.Row="2">
+            <Button Content="Load Versions" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Top" Width="Auto" 
+                    Click="Load_Versions_For_Region" IsEnabled="{Binding CanLoadVersions}"/>
+            <Button Content="Update Match Cache" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Top" Width="Auto" 
+                    Click="Update_Match_Cache" IsEnabled="{Binding CanCacheMatchData}"/>
+            <Button Content="Update Item Cache" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Top" Width="Auto" 
+                    Click="Update_Item_Cache" IsEnabled="{Binding CanCacheItemData}"/>
+            <Button Content="Update Champion Cache" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Top" Width="Auto" 
+                    Click="Update_Champ_Cache" IsEnabled="{Binding CanCacheChampData}"/>
+            <Button Content="Stop Caching" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Top" Width="Auto"
+                    Click="Stop_Cache_Tasks" IsEnabled="True"/>
+        </StackPanel>
+        <Grid Grid.Row="3" Height="Auto" Margin="0" VerticalAlignment="Stretch">
+            <Grid.RowDefinitions>
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <ListBox Grid.Column="0" Width="Auto" Height="Auto" VerticalAlignment="Stretch"
+                     ItemsSource="{Binding Versions}" Margin="10" SelectedItem="{Binding SelectedVersion}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding .}"/>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>

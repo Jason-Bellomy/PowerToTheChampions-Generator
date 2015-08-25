@@ -1,4 +1,5 @@
 ﻿using RiotDataSource.CacheData;
+using RiotDataSource.Logging;
 using RiotDataSource.RiotRestAPI;
 using System;
 using System.Collections.Generic;
@@ -32,9 +33,13 @@ namespace RiotDataSource
         private RiotRestAPI.APIConfig _apiConfig = null;
         private RiotRestAPI.APIConnection _apiConnection = null;
 
-        private MatchManager _matchManager;
-        private ItemManager _itemManager;
-        private ChampionManager _championManager;
+        private CacheDirectoryManager _cacheDirectoryManager = null;
+
+        private MatchManager _matchManager = null;
+
+        private VersionManager _versionManager = null;
+        private ItemManager _itemManager = null;
+        private ChampionManager _championManager = null;
 
         private CancellationTokenSource _matchCacheCancelationSource = new CancellationTokenSource();
         private CancellationTokenSource _itemCacheCancelationSource = new CancellationTokenSource();
@@ -53,22 +58,20 @@ namespace RiotDataSource
 
             string[] pathsToCacheData = new string[] { applicationPath, "..", "..", "..", "CachedData" };
             _RootDataCacheFileDir_ = System.IO.Path.Combine(pathsToCacheData);
+            _cacheDirectoryManager = new CacheDirectoryManager(_RootDataCacheFileDir_);
 
-            string[] pathsToAPIConfig = new string[] { applicationPath, "..", "..", "..", "CachedData", "ApiConfig", "apiConfig.json" };
-            string pathToAPIConfig = System.IO.Path.Combine(pathsToAPIConfig);
-            LoadAPIConfig(pathToAPIConfig);
+            LogManager.LogMessage("Verifying cache folder structure...");
+            _cacheDirectoryManager.VerifyFolderStructure();
+            LogManager.LogMessage("Cache folder structure setup.");
 
+            LoadAPIConfig(_cacheDirectoryManager.APIConfigFilePath);
             _apiConnection = new RiotRestAPI.APIConnection(_apiConfig);
 
-            string rawMatchDataDirectory = System.IO.Path.Combine(_RootDataCacheFileDir_, "RawMatchData");
-            string matchDataDTODirectory = System.IO.Path.Combine(_RootDataCacheFileDir_, "MatchData");
-            _matchManager = new MatchManager(_apiConnection, rawMatchDataDirectory, matchDataDTODirectory);
+            _versionManager = new VersionManager(_apiConnection);
 
-            string rawItemDataDirectory = System.IO.Path.Combine(_RootDataCacheFileDir_, "RawItemData");
-            _itemManager = new ItemManager(_apiConnection, rawItemDataDirectory);
-
-            string rawChampionDataDirectory = System.IO.Path.Combine(_RootDataCacheFileDir_, "RawChampionData");
-            _championManager = new ChampionManager(_apiConnection, rawChampionDataDirectory);
+            _matchManager = new MatchManager(_apiConnection, _cacheDirectoryManager.MatchDataFolderPath);
+            _itemManager = new ItemManager(_apiConnection, _cacheDirectoryManager.ItemDataFolderPath);
+            _championManager = new ChampionManager(_apiConnection, _cacheDirectoryManager.ChampionDataFolderPath);
         }
 
         private string _log;
@@ -93,6 +96,14 @@ namespace RiotDataSource
             }
         }
 
+        public bool CanLoadVersions
+        {
+            get
+            {
+                return (_selectedMatchListing != null);
+            }
+        }
+
         public bool CanCacheMatchData
         {
             get
@@ -105,7 +116,7 @@ namespace RiotDataSource
         {
             get
             {
-                return (_selectedMatchListing != null);
+                return (_selectedMatchListing != null && _selectedVersion != null);
             }
         }
 
@@ -113,7 +124,7 @@ namespace RiotDataSource
         {
             get
             {
-                return (_selectedMatchListing != null);
+                return (_selectedMatchListing != null && _selectedVersion != null);
             }
         }
 
@@ -136,8 +147,43 @@ namespace RiotDataSource
             set
             {
                 _selectedMatchListing = value;
+
                 OnPropertyChanged("SelectedMatchListing");
+                OnPropertyChanged("CanLoadVersions");
                 OnPropertyChanged("CanCacheMatchData");
+                OnPropertyChanged("CanCacheItemData");
+                OnPropertyChanged("CanCacheChampData");
+
+                Versions = null;
+            }
+        }
+
+        private List<string> _versions = null;
+        public List<string> Versions
+        {
+            get
+            {
+                return _versions;
+            }
+            set
+            {
+                _versions = value;
+
+                OnPropertyChanged("Versions");
+            }
+        }
+
+        private String _selectedVersion = null;
+        public String SelectedVersion
+        {
+            get
+            {
+                return _selectedVersion;
+            }
+            set
+            {
+                _selectedVersion = value;
+
                 OnPropertyChanged("CanCacheItemData");
                 OnPropertyChanged("CanCacheChampData");
             }
@@ -157,6 +203,13 @@ namespace RiotDataSource
             _apiConfig = (RiotRestAPI.APIConfig)Convert.ChangeType(objResponse, typeof(RiotRestAPI.APIConfig));
 
             LogProgress("Loaded API Config: " + _apiConfig.ApiKey);
+        }
+
+        private void Load_Versions_For_Region(object sender, RoutedEventArgs e)
+        {
+            LogManager.LogMessage("Starting version load...");
+            Versions = _versionManager.LoadVersions(_selectedMatchListing.region);
+            LogManager.LogMessage("Finished version load.");
         }
 
         private void Update_Match_Cache(object sender, RoutedEventArgs e)

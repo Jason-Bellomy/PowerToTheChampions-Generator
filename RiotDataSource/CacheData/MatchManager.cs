@@ -15,15 +15,13 @@ namespace RiotDataSource.CacheData
         const int RATE_LIMIT_WAIT_IN_MS = 5000;
 
         private string _rawMatchDataDirectory = "";
-        private string _matchDataDTODirectory = "";
 
         private APIConnection _apiConnection = null;
 
-        public MatchManager(APIConnection apiConnection, string rawMatchDataDirectory, string matchDataDTODirectory)
+        public MatchManager(APIConnection apiConnection, string rawMatchDataDirectory)
         {
             _apiConnection = apiConnection;
             _rawMatchDataDirectory = rawMatchDataDirectory;
-            _matchDataDTODirectory = matchDataDTODirectory;
         }
 
         static private void LogProgress(string logMessage)
@@ -42,37 +40,6 @@ namespace RiotDataSource.CacheData
             string filePath = System.IO.Path.Combine(rawfilePathParts);
 
             return File.Exists(filePath);
-        }
-
-        public bool DoesCachedCopyOfMatchDTOExist(SeedData.MatchListing matchListing, string matchId)
-        {
-            string[] rawfilePathParts = new string[] { _matchDataDTODirectory, BuildMatchFileName(matchListing, matchId) };
-            string filePath = System.IO.Path.Combine(rawfilePathParts);
-
-            return File.Exists(filePath);
-        }
-
-        public void BeautifyCachedCopyOfMatches(List<SeedData.MatchListing> matchListings)
-        {
-            foreach (SeedData.MatchListing matchListing in matchListings)
-            {
-                foreach (string matchId in matchListing.MatchIds)
-                {
-                    if (DoesRawCachedCopyOfMatchExist(matchListing, matchId))
-                    {
-                        string[] rawfilePathParts = new string[] { _rawMatchDataDirectory, BuildMatchFileName(matchListing, matchId) };
-                        string filePath = System.IO.Path.Combine(rawfilePathParts);
-                        BeautifyJSONFile(filePath);
-                    }
-
-                    if (DoesCachedCopyOfMatchDTOExist(matchListing, matchId))
-                    {
-                        string[] dtoFilePathParts = new string[] { _matchDataDTODirectory, BuildMatchFileName(matchListing, matchId) };
-                        string filePath = System.IO.Path.Combine(dtoFilePathParts);
-                        BeautifyJSONFile(filePath);
-                    }
-                }
-            }
         }
 
         public void BeautifyJSONFile(string filePath)
@@ -196,19 +163,6 @@ namespace RiotDataSource.CacheData
                     }
 
                     RiotRestAPI.MatchDTO match = LoadMatch(listing, matchId);
-
-                    DataContractJsonSerializer ser = new DataContractJsonSerializer(typeof(RiotRestAPI.MatchDTO));
-                    MemoryStream mstream = new MemoryStream();
-                    ser.WriteObject(mstream, match);
-                    string uglyJSON = Encoding.Default.GetString(mstream.ToArray());
-                    string prettyJSON = JsonPrettyPrinterPlus.PrettyPrinterExtensions.PrettyPrintJson(uglyJSON);
-
-                    string[] filePathParts = new string[] { _matchDataDTODirectory, BuildMatchFileName(listing, matchId) };
-                    string filePath = System.IO.Path.Combine(filePathParts);
-                    FileStream fstream = new FileStream(filePath, FileMode.Create);
-                    byte[] data = Encoding.ASCII.GetBytes(prettyJSON);
-                    fstream.Write(data, 0, data.Length);
-                    fstream.Close();
                 }
             }
             return false;
