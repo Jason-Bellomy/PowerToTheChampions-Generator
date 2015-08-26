@@ -189,6 +189,20 @@ namespace RiotDataSource
             }
         }
 
+        private List<ItemDTO> _versionedItems = null;
+        public List<ItemDTO> VersionedItems
+        {
+            get
+            {
+                return _versionedItems;
+            }
+            set
+            {
+                _versionedItems = value;
+                OnPropertyChanged("VersionedItems");
+            }
+        }
+
         private void LoadAPIConfig(string pathToAPIConfig)
         {
             if (!File.Exists(pathToAPIConfig))
@@ -261,9 +275,14 @@ namespace RiotDataSource
                 return;
             }
 
-            LogProgress("Starting to pull and cache items.");
+            LogManager.LogMessage("Starting to pull and cache items...");
+            LogManager.LogMessage("- Pulling item ID list for selected region/version...");
+            List<int> itemIds = _itemManager.LoadItemIds(_selectedMatchListing.region, _selectedVersion);
+            LogManager.LogMessage("- Pulled " + itemIds.Count + " item Ids.");
 
-            foreach (string matchId in _selectedMatchListing.MatchIds)
+            LogManager.LogMessage("- Pulling items by id...");
+            List<ItemDTO> items = new List<ItemDTO>();
+            foreach (int itemId in itemIds)
             {
                 if (_itemCacheCancelationSource.Token.IsCancellationRequested)
                 {
@@ -273,44 +292,14 @@ namespace RiotDataSource
                     break;
                 }
 
-                MatchDTO match = _matchManager.LoadMatch(_selectedMatchListing, matchId);
-                foreach (MatchTimelineFrameDTO frame in match.Timeline.Frames)
+                ItemDTO item = _itemManager.LoadItem(_selectedMatchListing.region, _selectedVersion, itemId);
+                if (item != null)
                 {
-                    if (frame.FrameEvents == null)
-                    {
-                        continue;
-                    }
-
-                    if (_itemCacheCancelationSource.Token.IsCancellationRequested)
-                    {
-                        break;
-                    }
-
-                    foreach (MatchTimelineFrameEventDTO frameEvent in frame.FrameEvents)
-                    {
-                        if (_itemCacheCancelationSource.Token.IsCancellationRequested)
-                        {
-                            break;
-                        }
-
-                        if (frameEvent.ItemBefore != 0)
-                        {
-                            _itemManager.LoadItem(_selectedMatchListing.region, frameEvent.ItemBefore);
-                        }
-
-                        if (frameEvent.ItemAfter != 0)
-                        {
-                            _itemManager.LoadItem(_selectedMatchListing.region, frameEvent.ItemAfter);
-                        }
-
-                        if (frameEvent.ItemId != 0)
-                        {
-                            _itemManager.LoadItem(_selectedMatchListing.region, frameEvent.ItemId);
-                        }
-                    }
+                    items.Add(item);
                 }
             }
-            LogProgress("Finished caching items.");
+            VersionedItems = items;
+            LogManager.LogMessage("Finished caching items.");
         }
 
         private void Update_Champ_Cache(object state, RoutedEventArgs e)

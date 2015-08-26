@@ -38,6 +38,7 @@
       <HintPath>..\packages\JsonPrettyPrinter.1.0.1.1\lib\net35\JsonPrettyPrinterPlus.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Runtime.Serialization" />
@@ -76,6 +77,7 @@
     <Compile Include="RiotRestAPI\Items\ItemDTO.cs" />
     <Compile Include="RiotRestAPI\Items\ItemGoldDataDTO.cs" />
     <Compile Include="RiotRestAPI\Items\ItemImageDataDTO.cs" />
+    <Compile Include="RiotRestAPI\Items\ItemsDTO.cs" />
     <Compile Include="RiotRestAPI\Matches\MatchDTO.cs" />
     <Compile Include="RiotRestAPI\APIConnection.cs" />
     <Compile Include="RiotRestAPI\Matches\MatchParticipantDTO.cs" />

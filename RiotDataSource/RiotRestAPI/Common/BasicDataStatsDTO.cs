@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace RiotDataSource.RiotRestAPI
 {
     [DataContract]
-    class BasicDataStatsDTO
+    public class BasicDataStatsDTO
     {
 
     }
