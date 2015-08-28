@@ -41,9 +41,9 @@ namespace RiotDataSource
         private ItemManager _itemManager = null;
         private ChampionManager _championManager = null;
 
-        private CancellationTokenSource _matchCacheCancelationSource = new CancellationTokenSource();
-        private CancellationTokenSource _itemCacheCancelationSource = new CancellationTokenSource();
-        private CancellationTokenSource _champCacheCancelationSource = new CancellationTokenSource();
+        private CancellationTokenSource _matchCacheCancelationSource = null;
+        private CancellationTokenSource _itemCacheCancelationSource = null;
+        private CancellationTokenSource _champCacheCancelationSource = null;
         
         public MainWindow()
         {
@@ -182,10 +182,16 @@ namespace RiotDataSource
             }
             set
             {
-                _selectedVersion = value;
+                if (value != _selectedVersion)
+                {
+                    _selectedVersion = value;
 
-                OnPropertyChanged("CanCacheItemData");
-                OnPropertyChanged("CanCacheChampData");
+                    OnPropertyChanged("CanCacheItemData");
+                    OnPropertyChanged("CanCacheChampData");
+
+                    VersionedItems = null;
+                    VersionedChampions = null;
+                }
             }
         }
 
@@ -200,6 +206,20 @@ namespace RiotDataSource
             {
                 _versionedItems = value;
                 OnPropertyChanged("VersionedItems");
+            }
+        }
+
+        private List<ChampionDTO> _versionedChampions = null;
+        public List<ChampionDTO> VersionedChampions
+        {
+            get
+            {
+                return _versionedChampions;
+            }
+            set
+            {
+                _versionedChampions = value;
+                OnPropertyChanged("VersionedChampions");
             }
         }
 
@@ -246,13 +266,11 @@ namespace RiotDataSource
             }
 
             LogProgress("Starting to pull and cache matches for " + _selectedMatchListing.DisplayName + ".");
-            var cancelRequest = _matchManager.CacheMatchesFromAPI(new List<SeedData.MatchListing>() { _selectedMatchListing }, _matchCacheCancelationSource.Token);
-            if (cancelRequest)
-            {
-                _matchCacheCancelationSource = new CancellationTokenSource();
-                _itemCacheCancelationSource = new CancellationTokenSource();
-                _champCacheCancelationSource = new CancellationTokenSource();
-            }
+
+            _matchCacheCancelationSource = new CancellationTokenSource();
+            _matchManager.CacheMatchesFromAPI(new List<SeedData.MatchListing>() { _selectedMatchListing }, _matchCacheCancelationSource.Token);
+            _matchCacheCancelationSource = null;
+
             LogProgress("Finished caching matches.");
         }
 
@@ -282,13 +300,11 @@ namespace RiotDataSource
 
             LogManager.LogMessage("- Pulling items by id...");
             List<ItemDTO> items = new List<ItemDTO>();
+            _itemCacheCancelationSource = new CancellationTokenSource();
             foreach (int itemId in itemIds)
             {
                 if (_itemCacheCancelationSource.Token.IsCancellationRequested)
                 {
-                    _matchCacheCancelationSource = new CancellationTokenSource();
-                    _itemCacheCancelationSource = new CancellationTokenSource();
-                    _champCacheCancelationSource = new CancellationTokenSource();
                     break;
                 }
 
@@ -299,6 +315,7 @@ namespace RiotDataSource
                 }
             }
             VersionedItems = items;
+            _itemCacheCancelationSource = null;
             LogManager.LogMessage("Finished caching items.");
         }
 
@@ -311,53 +328,66 @@ namespace RiotDataSource
         {
             if (_matchListings.Count == 0)
             {
-                LogProgress("No match ID listings to use for match IDs.");
+                LogManager.LogMessage("No match ID listings to use for match IDs.");
                 return;
             }
 
             if (_selectedMatchListing == null)
             {
-                LogProgress("No match listing selected to use for match IDs.");
+                LogManager.LogMessage("No match listing selected to use for match IDs.");
+                return;
+            }
+
+            if (_selectedVersion == null || _selectedVersion == "")
+            {
+                LogManager.LogMessage("No version selected to use for querying champions");
                 return;
             }
 
             LogProgress("Starting to pull and cache champions.");
+            _champCacheCancelationSource = new CancellationTokenSource();
 
-            foreach (string matchId in _selectedMatchListing.MatchIds)
+            List<int> championIds = _championManager.LoadIds(_selectedMatchListing.region, _selectedVersion);
+            LogProgress(" - Pulled " + championIds.Count + " champion ids for version " + _selectedVersion);
+
+            List<ChampionDTO> champions = new List<ChampionDTO>();
+            foreach (int championId in championIds)
             {
                 if (_champCacheCancelationSource.Token.IsCancellationRequested)
                 {
-                    _matchCacheCancelationSource = new CancellationTokenSource();
-                    _itemCacheCancelationSource = new CancellationTokenSource();
-                    _champCacheCancelationSource = new CancellationTokenSource();
                     break;
                 }
 
-                MatchDTO match = _matchManager.LoadMatch(_selectedMatchListing, matchId);
-                foreach (MatchParticipantDTO participant in match.MatchParticipants)
+                ChampionDTO thisChamp = _championManager.LoadChampion(_selectedMatchListing.region,
+                                                                      _selectedVersion, championId);
+
+                if (thisChamp != null)
                 {
-                    if (participant == null || participant.ParticipantId < 0)
-                    {
-                        continue;
-                    }
-
-                    if (_champCacheCancelationSource.Token.IsCancellationRequested)
-                    {
-                        break;
-                    }
-
-                    _championManager.LoadChampion(_selectedMatchListing.region, participant.ChampionId);
-
+                    champions.Add(thisChamp);
                 }
             }
+            _champCacheCancelationSource = null;
+            VersionedChampions = champions;
+
             LogProgress("Finished caching champions.");
         }
 
         private void Stop_Cache_Tasks(object state, RoutedEventArgs e)
         {
-            _matchCacheCancelationSource.Cancel();
-            _itemCacheCancelationSource.Cancel();
-            _champCacheCancelationSource.Cancel();
+            if (_matchCacheCancelationSource != null)
+            {
+                _matchCacheCancelationSource.Cancel();
+            }
+            
+            if (_itemCacheCancelationSource != null)
+            {
+                _itemCacheCancelationSource.Cancel();
+            }
+
+            if (_champCacheCancelationSource != null)
+            {
+                _champCacheCancelationSource.Cancel();
+            }
         }
 
         private void LogProgress(string logMessage)

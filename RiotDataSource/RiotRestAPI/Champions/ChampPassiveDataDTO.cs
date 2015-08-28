@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace RiotDataSource.RiotRestAPI
 {
     [DataContract]
-    class ChampPassiveDataDTO
+    public class ChampPassiveDataDTO
     {
         [DataMember(Name = "sanitizedDescription", Order = 0)]
         public string SanitizedDescription { get; set; }

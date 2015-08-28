@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace RiotDataSource.RiotRestAPI
 {
     [DataContract]
-    class ChampionDTO
+    public class ChampionDTO
     {
         [DataMember(Name = "id", Order = 0)]
         public int Id { get; set; }

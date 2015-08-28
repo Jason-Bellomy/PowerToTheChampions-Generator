@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace RiotDataSource.RiotRestAPI
 {
     [DataContract]
-    class ChampImageDataDTO
+    public class ChampImageDataDTO
     {
         [DataMember(Name = "w", Order = 0)]
         public string W { get; set; }

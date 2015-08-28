@@ -50,8 +50,8 @@ namespace RiotDataSource.CacheData
                     foreach (string itemId in items.Items.Keys)
                     {
                         itemIds.Add(Convert.ToInt32(itemId));
-                        itemIds.Sort();
                     }
+                    itemIds.Sort();
                 }
                 else if (rateLimitHit)
                 {

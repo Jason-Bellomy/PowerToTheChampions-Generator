@@ -59,8 +59,16 @@
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
-            <ListBox Width="140" Height="Auto" VerticalAlignment="Stretch"
+            <ListBox Width="185" Height="Auto" VerticalAlignment="Stretch"
                      ItemsSource="{Binding VersionedItems}" Margin="10">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Name}"/>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+            <ListBox Width="160" Height="Auto" VerticalAlignment="Stretch"
+                     ItemsSource="{Binding VersionedChampions}" Margin="10">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <TextBlock Text="{Binding Name}"/>

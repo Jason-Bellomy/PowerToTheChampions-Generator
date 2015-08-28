@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace RiotDataSource.RiotRestAPI
 {
     [DataContract]
-    class ChampStatsDataDTO
+    public class ChampStatsDataDTO
     {
         [DataMember(Name = "attackrange", Order = 0)]
         public int AttackRange { get; set; }

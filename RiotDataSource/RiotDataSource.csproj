@@ -70,6 +70,7 @@
     <Compile Include="Logging\LogProcessor.cs" />
     <Compile Include="RiotRestAPI\APIConfig.cs" />
     <Compile Include="RiotRestAPI\Champions\ChampionDTO.cs" />
+    <Compile Include="RiotRestAPI\Champions\ChampionsDTO.cs" />
     <Compile Include="RiotRestAPI\Champions\ChampSkinDataDTO.cs" />
     <Compile Include="RiotRestAPI\Champions\ChampPassiveDataDTO.cs" />
     <Compile Include="RiotRestAPI\Champions\ChampImageDataDTO.cs" />
