@@ -15,6 +15,8 @@
         <StackPanel Width="Auto" HorizontalAlignment="Left" Orientation="Horizontal" Grid.Row="0">
             <Button Content="Load Cached Match Listings" Margin="10,10,0,0"
                     Click="Load_Match_DataFiles" IsEnabled="{Binding CanLoadMatchListings}"/>
+            <Button Content="Update Match Cache" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="Auto" 
+                    Click="Update_Match_Cache" IsEnabled="{Binding CanCacheMatchData}"/>
         </StackPanel>
         <Grid Grid.Row="1">
             <Grid.RowDefinitions>
@@ -40,8 +42,6 @@
         <StackPanel Width="Auto" HorizontalAlignment="Left" Orientation="Horizontal" Grid.Row="2">
             <Button Content="Load Versions" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Top" Width="Auto" 
                     Click="Load_Versions_For_Region" IsEnabled="{Binding CanLoadVersions}"/>
-            <Button Content="Update Match Cache" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Top" Width="Auto" 
-                    Click="Update_Match_Cache" IsEnabled="{Binding CanCacheMatchData}"/>
             <Button Content="Update Item Cache" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Top" Width="Auto" 
                     Click="Update_Item_Cache" IsEnabled="{Binding CanCacheItemData}"/>
             <Button Content="Update Champion Cache" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Top" Width="Auto" 
